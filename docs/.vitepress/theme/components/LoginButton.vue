@@ -3,7 +3,7 @@
 
     <a
       v-if="!loggedIn"
-      href="`${API_URL}`/auth/discord"
+      href="`${API_URL}/auth/discord`"
       class="login-btn"
     >
       Login
