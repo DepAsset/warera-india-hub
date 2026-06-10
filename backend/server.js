@@ -52,7 +52,7 @@ passport.use(
         process.env.DISCORD_CLIENT_SECRET,
 
       callbackURL:
-        "http://localhost:3000/auth/discord/callback",
+        "https://warera-india-hub.onrender.com/auth/discord/callback",
 
       scope: [
         "identify"
