@@ -1,7 +1,9 @@
 node_modules
 .env
 .env.local
+
+docs/.vitepress/cache
+docs/.vitepress/dist
+
 dist
 .cache
-.vitepress/cache
-.vitepress/dist
