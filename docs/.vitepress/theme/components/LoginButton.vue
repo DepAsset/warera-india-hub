@@ -3,7 +3,7 @@
 
     <a
       v-if="!loggedIn"
-      href="http://localhost:3000/auth/discord"
+      href="`${API_URL}`/auth/discord"
       class="login-btn"
     >
       Login
@@ -22,6 +22,8 @@
 <script setup>
 
 import { ref, onMounted } from 'vue'
+import { API_URL }
+from "../api"
 
 const loggedIn = ref(false)
 const username = ref('')
@@ -31,7 +33,7 @@ onMounted(async () => {
   try {
 
     const response = await fetch(
-      'http://localhost:3000/api/me',
+      '`${API_URL}`/api/me',
       {
         credentials: 'include'
       }

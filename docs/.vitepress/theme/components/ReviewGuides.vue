@@ -2,13 +2,16 @@
 
 import { ref, onMounted } from "vue"
 
+import { API_URL }
+from "../api"
+
 const guides = ref([])
 
 async function loadGuides() {
 
   const response =
     await fetch(
-      "http://localhost:3000/api/review/pending"
+      "`${API_URL}`/api/review/pending"
     )
 
   guides.value =
@@ -19,7 +22,7 @@ async function loadGuides() {
 async function approveGuide(id) {
 
   await fetch(
-    `http://localhost:3000/api/review/approve/${id}`,
+    "`${API_URL}`/api/review/approve/${id}`",
     {
       method: "POST"
     }

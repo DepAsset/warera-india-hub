@@ -48,6 +48,8 @@
 <script setup>
 
 import { ref, onMounted } from "vue"
+import { API_URL }
+from "../api"
 
 const guides = ref([])
 
@@ -57,7 +59,7 @@ onMounted(async () => {
 
     const response =
       await fetch(
-        "http://localhost:3000/api/my-guides",
+        "`${API_URL}`/api/my-guides",
         {
           credentials: "include"
         }

@@ -57,6 +57,9 @@
 
 import { ref, onMounted }
 from "vue"
+import { API_URL }
+from "../api"
+
 
 const title = ref("")
 const excerpt = ref("")
@@ -69,7 +72,7 @@ async function loadCategories() {
 
   const response =
     await fetch(
-      "http://localhost:3000/api/categories"
+      "`${API_URL}`/api/categories"
     )
 
   categories.value =
@@ -83,7 +86,7 @@ async function submitGuide() {
 
     const response =
       await fetch(
-        "http://localhost:3000/api/guides",
+        "`${API_URL}`/api/guides",
         {
           method: "POST",
 

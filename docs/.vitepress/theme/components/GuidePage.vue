@@ -45,6 +45,9 @@ from "vue"
 import MarkdownIt
 from "markdown-it"
 
+import { API_URL }
+from "../api"
+
 const md = new MarkdownIt()
 
 const guide = ref(null)
@@ -82,7 +85,7 @@ onMounted(async () => {
 
   const response =
     await fetch(
-      `http://localhost:3000/api/guide/${slug}`
+      `${API_URL}/api/guide/${slug}`
     )
 
   guide.value =

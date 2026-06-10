@@ -47,7 +47,7 @@
   <div v-else>
 
     <a
-      href="http://localhost:3000/auth/discord"
+      href="`${API_URL}`/auth/discord"
       class="login-btn"
     >
       Login with Discord
@@ -63,6 +63,8 @@
 
 import { ref, computed, onMounted }
 from "vue"
+import { API_URL }
+from "../api"
 
 const user = ref(null)
 
@@ -83,7 +85,7 @@ async function loadUser() {
 
     const response =
       await fetch(
-        "http://localhost:3000/api/me",
+        `${API_URL}/api/categories`,
         {
           credentials: "include"
         }

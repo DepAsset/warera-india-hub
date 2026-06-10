@@ -27,6 +27,9 @@
 
 import { ref, onMounted } from "vue"
 
+import { API_URL }
+from "../api"
+
 const categories = ref([])
 
 async function loadCategories() {
@@ -35,7 +38,7 @@ async function loadCategories() {
 
     const response =
       await fetch(
-        "http://localhost:3000/api/categories"
+        `${API_URL}/api/categories`
       )
 
     categories.value =
