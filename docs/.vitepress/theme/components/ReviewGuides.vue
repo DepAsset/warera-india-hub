@@ -11,7 +11,7 @@ async function loadGuides() {
 
   const response =
     await fetch(
-      "`${API_URL}`/api/review/pending"
+      `${API_URL}/api/review/pending`
     )
 
   guides.value =
@@ -22,7 +22,7 @@ async function loadGuides() {
 async function approveGuide(id) {
 
   await fetch(
-    "`${API_URL}`/api/review/approve/${id}`",
+    `${API_URL}/api/review/approve/${id}`,
     {
       method: "POST"
     }

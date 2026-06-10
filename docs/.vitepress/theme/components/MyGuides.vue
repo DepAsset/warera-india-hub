@@ -59,7 +59,7 @@ onMounted(async () => {
 
     const response =
       await fetch(
-        "`${API_URL}`/api/my-guides",
+        `${API_URL}/api/my-guides`,
         {
           credentials: "include"
         }

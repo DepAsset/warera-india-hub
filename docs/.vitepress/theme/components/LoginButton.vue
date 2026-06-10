@@ -3,7 +3,7 @@
 
     <a
       v-if="!loggedIn"
-      href="`${API_URL}/auth/discord`"
+      :href="`${API_URL}/auth/discord`"
       class="login-btn"
     >
       Login
@@ -33,7 +33,7 @@ onMounted(async () => {
   try {
 
     const response = await fetch(
-      '`${API_URL}`/api/me',
+       `${API_URL}/api/me`,
       {
         credentials: 'include'
       }

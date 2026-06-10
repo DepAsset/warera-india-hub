@@ -72,7 +72,7 @@ async function loadCategories() {
 
   const response =
     await fetch(
-      "`${API_URL}`/api/categories"
+      `${API_URL}/api/categories`
     )
 
   categories.value =
@@ -86,7 +86,7 @@ async function submitGuide() {
 
     const response =
       await fetch(
-        "`${API_URL}`/api/guides",
+        `${API_URL}/api/guides`,
         {
           method: "POST",
 

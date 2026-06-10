@@ -47,7 +47,7 @@
   <div v-else>
 
     <a
-      href="`${API_URL}/auth/discord`"
+      :href="`${API_URL}/auth/discord`"
       class="login-btn"
     >
       Login with Discord
@@ -85,7 +85,7 @@ async function loadUser() {
 
     const response =
       await fetch(
-        `${API_URL}/api/categories`,
+        `${API_URL}/api/me`,
         {
           credentials: "include"
         }
