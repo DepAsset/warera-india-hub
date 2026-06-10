@@ -37,8 +37,8 @@
 
 <script setup>
 
-import { API_URL }
-from "../api"
+import { ref, onMounted } from "vue"
+import { API_URL } from "../api"
 
 const category = ref(null)
 const guides = ref([])
@@ -53,7 +53,7 @@ async function loadGuides() {
 
   const response =
     await fetch(
-     " `${API_URL}`/api/guides/category/${slug}`"
+      `${API_URL}/api/guides/category/${slug}`
     )
 
   const data =
