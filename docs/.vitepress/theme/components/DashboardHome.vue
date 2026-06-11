@@ -267,6 +267,11 @@ async function loadUser() {
         }
       )
 
+    console.log(
+      "DASHBOARD API:",
+      await response.clone().json()
+    )
+
     const data =
       await response.json()
 

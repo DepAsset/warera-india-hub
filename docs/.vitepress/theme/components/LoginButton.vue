@@ -125,10 +125,14 @@ onMounted(async () => {
       await fetch(
         `${API_URL}/api/me`,
         {
-          credentials:
-            "include"
+          credentials: "include"
         }
       )
+
+    console.log(
+      "LOGINBUTTON API:",
+      await response.clone().json()
+    )
 
     const data =
       await response.json()
