@@ -170,13 +170,21 @@ app.get(
       `${process.env.FRONTEND_URL}/dashboard/`
     )
 
-    req.session.save(() => {
+    req.login(req.user, err => {
+
+  if (err) {
+    return res.redirect("/login-failed")
+  }
+
+  req.session.save(() => {
 
       res.redirect(
         `${process.env.FRONTEND_URL}/dashboard/`
       )
 
     })
+
+  })
 
   }
 )
@@ -270,6 +278,25 @@ app.get("/api/me", async (req, res) => {
   }
 
 })
+
+app.get(
+  "/debug-session",
+  (req, res) => {
+
+    res.json({
+
+      session: req.session,
+
+      passport:
+        req.session?.passport,
+
+      user:
+        req.user
+
+    })
+
+  }
+)
 
 
 app.get("/api/country", async (req, res) => {
