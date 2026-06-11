@@ -14,9 +14,13 @@ import GuidePage from "./components/GuidePage.vue"
 import MyGuides from "./components/MyGuides.vue"
 import EditGuide
 from "./components/EditGuide.vue"
+import Layout from './Layout.vue'
 
 export default {
+
   extends: DefaultTheme,
+
+  Layout,
 
   enhanceApp({ app }) {
     app.component('HomeSections', HomeSections)
@@ -33,6 +37,7 @@ export default {
   "EditGuide",
   EditGuide
 )
+
   },
 
   setup() {

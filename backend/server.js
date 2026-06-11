@@ -9,11 +9,31 @@ import passport from "passport"
 import { Strategy as DiscordStrategy }
 from "passport-discord"
 
+import uploadRoutes
+from "./routes/uploadRoutes.js"
+
+import path from "path"
+
 import dotenv from "dotenv"
 
 dotenv.config()
 const app = express()
 app.use(express.json())
+
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "https://warera-india-hub.vercel.app"
+    ],
+    credentials: true
+  })
+)
+
+app.use(
+  "/uploads",
+  express.static("uploads")
+)
 
 app.use(
   session({
@@ -33,6 +53,10 @@ app.use(
 
 app.use(passport.initialize())
 app.use(passport.session())
+app.use(
+  "/api/upload",
+  uploadRoutes
+)
 
 passport.serializeUser((user, done) => {
   done(null, user)
@@ -52,7 +76,7 @@ passport.use(
         process.env.DISCORD_CLIENT_SECRET,
 
       callbackURL:
-        "https://warera-india-hub.onrender.com/auth/discord/callback",
+        process.env.DISCORD_CALLBACK_URL,
 
       scope: [
         "identify"
@@ -97,16 +121,6 @@ passport.use(
   )
 )
 
-app.use(
-  cors({
-    origin: [
-      "http://localhost:5173",
-      "https://warera-india-hub.vercel.app"
-    ],
-    credentials: true
-  })
-)
-
 app.get(
   "/auth/discord",
   passport.authenticate("discord")
@@ -124,14 +138,53 @@ app.get(
 
   (req, res) => {
 
-    res.redirect(
-        "http://localhost:5173/dashboard/"
+    console.log(
+      "Redirecting to:",
+      `${process.env.FRONTEND_URL}/dashboard/`
     )
- }
+
+    req.session.save(() => {
+
+      res.redirect(
+        `${process.env.FRONTEND_URL}/dashboard/`
+      )
+
+    })
+
+  }
 )
 
-app.get("/api/me", (req, res) => {
+app.get(
+  "/auth/logout",
 
+  (req, res) => {
+
+    req.logout(() => {
+
+      req.session.destroy(() => {
+
+        res.clearCookie(
+          "connect.sid"
+        )
+
+        res.redirect(
+          process.env.FRONTEND_URL
+        )
+
+      })
+
+    })
+
+  }
+)
+
+app.get("/api/me", async (req, res) => {
+
+  console.log("===== API /me =====")
+  console.log("SESSION:")
+  console.log(req.session)
+
+  console.log("USER:")
   console.log(req.user)
 
   if (!req.user) {
@@ -142,17 +195,55 @@ app.get("/api/me", (req, res) => {
 
   }
 
-  res.json({
-    loggedIn: true,
+  try {
 
-    user: {
-      id: req.user.id,
-      username: req.user.username,
-      avatar: req.user.avatar
-    }
-  })
+    const { data: dbUser }
+      = await supabase
+          .from("users")
+          .select("*")
+          .eq(
+            "discord_id",
+            req.user.id
+          )
+          .single()
+
+    res.json({
+
+      loggedIn: true,
+
+      user: {
+
+        id:
+          req.user.id,
+
+        username:
+          req.user.username,
+
+        avatar:
+          req.user.avatar,
+
+        role:
+          dbUser?.role || "author"
+
+      }
+
+    })
+
+  }
+
+  catch(err) {
+
+    console.error(err)
+
+    res.status(500).json({
+      error:
+        "Server Error"
+    })
+
+  }
 
 })
+
 
 app.get("/api/country", async (req, res) => {
 
@@ -254,64 +345,6 @@ app.get("/api/guides/category/:slug", async (req, res) => {
 
     res.status(500).json({
       error: "Failed to load guides"
-    })
-
-  }
-
-})
-
-app.post("/api/guides", async (req, res) => {
-
-  try {
-
-    if (!req.user) {
-
-      return res.status(401).json({
-        error: "Not logged in"
-      })
-
-    }
-
-    const {
-      title,
-      excerpt,
-      category_id,
-      content
-    } = req.body
-
-    const slug =
-      title
-        .toLowerCase()
-        .replaceAll(" ", "-")
-
-    const { data, error } =
-      await supabase
-        .from("guides")
-        .insert({
-          title,
-          slug,
-          excerpt,
-          category_id,
-          content,
-
-          status: "pending"
-        })
-        .select()
-
-    if (error) {
-      throw error
-    }
-
-    res.json(data)
-
-  }
-
-  catch(err) {
-
-    console.error(err)
-
-    res.status(500).json({
-      error: "Failed to create guide"
     })
 
   }
@@ -464,6 +497,101 @@ app.get("/api/guide/:slug", async (req, res) => {
   }
 
 })
+
+app.get(
+  "/api/guides/edit/:id",
+
+  async (req, res) => {
+
+    try {
+
+      const { id } =
+        req.params
+
+      const { data, error } =
+        await supabase
+          .from("guides")
+          .select("*")
+          .eq("id", id)
+          .single()
+
+      if (error)
+        throw error
+
+      res.json(data)
+
+    }
+
+    catch (err) {
+
+      console.error(err)
+
+      res.status(500).json({
+        error: err.message
+      })
+
+    }
+
+  }
+)
+
+app.put(
+  "/api/guides/:id",
+
+  async (req, res) => {
+
+    try {
+
+      const { id } =
+        req.params
+
+      const {
+        title,
+        excerpt,
+        content
+      } = req.body
+
+      const { data, error } =
+        await supabase
+          .from("guides")
+          .update({
+
+            title,
+
+            excerpt,
+
+            content,
+
+            updated_at:
+              new Date()
+                .toISOString(),
+
+            status:
+              "pending"
+
+          })
+          .eq("id", id)
+          .select()
+
+      if (error)
+        throw error
+
+      res.json(data)
+
+    }
+
+    catch (err) {
+
+      console.error(err)
+
+      res.status(500).json({
+        error: err.message
+      })
+
+    }
+
+  }
+)
 
 app.get("/api/my-guides", async (req, res) => {
 

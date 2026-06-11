@@ -713,3 +713,72 @@ body{
   }
 
 }
+
+.VPDoc.has-aside .content-container{
+
+  max-width:1400px !important;
+
+}
+
+.VPDoc.has-aside .content-container {
+
+  max-width: 100% !important;
+
+}
+
+.VPDoc.has-aside .content {
+
+  max-width: 100% !important;
+
+}
+
+.VPDoc.has-aside .container {
+
+  max-width: 100% !important;
+
+}
+
+/* ======================================================
+   DASHBOARD FULL WIDTH FIX
+====================================================== */
+
+.VPDoc {
+  padding: 0 !important;
+}
+
+.VPDoc .container {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.VPDoc .content {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.VPDoc .content-container {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.VPDoc.has-aside .container {
+  max-width: 100% !important;
+}
+
+.VPDoc.has-aside .content {
+  max-width: 100% !important;
+}
+
+.VPDoc.has-aside .content-container {
+  max-width: 100% !important;
+}
+
+.VPDoc .main {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+.VPDoc {
+
+  padding-top: 30px !important;
+
+}

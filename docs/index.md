@@ -21,4 +21,3 @@ hero:
 <RepublicStats />
 
 <HomeSections />
-<LoginButton />
