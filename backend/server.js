@@ -21,8 +21,24 @@ const app = express()
 const isProduction =
   process.env.NODE_ENV === "production" ||
   process.env.RENDER === "true"
+const frontendUrl =
+  process.env.FRONTEND_URL?.replace(/\/+$/, "")
+const discordCallbackUrl =
+  `${frontendUrl}/auth/discord/callback`
+
+if (!frontendUrl) {
+  throw new Error("FRONTEND_URL is required")
+}
 
 app.use(express.json())
+
+app.use(
+  ["/api", "/auth"],
+  (req, res, next) => {
+    res.set("Cache-Control", "no-store")
+    next()
+  }
+)
 
 app.use(
   cors({
@@ -102,7 +118,7 @@ passport.use(
         process.env.DISCORD_CLIENT_SECRET,
 
       callbackURL:
-        process.env.DISCORD_CALLBACK_URL,
+        discordCallbackUrl,
 
       scope: [
         "identify"
@@ -172,7 +188,7 @@ app.get(
 
     console.log(
       "Redirecting to:",
-      `${process.env.FRONTEND_URL}/dashboard/`
+      `${frontendUrl}/dashboard/`
     )
 
     req.session.save(err => {
@@ -183,7 +199,7 @@ app.get(
       }
 
       res.redirect(
-        `${process.env.FRONTEND_URL}/dashboard/`
+        `${frontendUrl}/dashboard/`
       )
 
     })
@@ -210,7 +226,7 @@ app.get(
         )
 
         res.redirect(
-          process.env.FRONTEND_URL
+          frontendUrl
         )
 
       })
@@ -708,7 +724,12 @@ app.get("/api/my-guides", async (req, res) => {
 })
 
 
-app.listen(3000, () => {
-  console.log("Backend running on port 3000")
+app.listen(process.env.PORT || 3000, () => {
+  console.log(
+    `Backend running on port ${process.env.PORT || 3000}`
+  )
+  console.log(
+    `Discord callback URL: ${discordCallbackUrl}`
+  )
 })
 
