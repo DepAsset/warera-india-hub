@@ -35,6 +35,24 @@ app.use(
   express.static("uploads")
 )
 
+app.get("/session-test", (req, res) => {
+
+  req.session.test = "HELLO"
+
+  res.json({
+    ok: true
+  })
+
+})
+
+app.get("/session-read", (req, res) => {
+
+  res.json({
+    test: req.session.test || null
+  })
+
+})
+
 app.set("trust proxy", 1)
 
 app.use(
