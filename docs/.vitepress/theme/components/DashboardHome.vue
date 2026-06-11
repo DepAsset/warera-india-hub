@@ -496,11 +496,11 @@ onMounted(loadUser)
 
   width:100%;
 
-  max-width:1800px;
+  max-width:1600px;
 
   margin:0 auto;
 
-  padding:90px 40px 40px;
+  padding:90px 48px 40px;
 
   box-sizing:border-box;
 
@@ -814,6 +814,13 @@ onMounted(loadUser)
 }
 
 @media(max-width:900px){
+
+  .dashboard{
+
+    padding:
+    70px 20px 32px;
+
+  }
 
   .hero-content{
 
