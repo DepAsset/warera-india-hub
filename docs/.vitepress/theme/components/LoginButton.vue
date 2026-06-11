@@ -2,13 +2,14 @@
 
 <div class="nav-user">
 
-  <a
+  <button
     v-if="!loggedIn"
-    :href="`${API_URL}/auth/discord`"
     class="login-btn"
+    type="button"
+    @click="login"
   >
     Login
-  </a>
+  </button>
 
   <div
     v-else
@@ -60,11 +61,13 @@
 
       <hr>
 
-      <a
-        :href="`${API_URL}/auth/logout`"
+      <button
+        class="logout-btn"
+        type="button"
+        @click="logout"
       >
         Logout
-      </a>
+      </button>
 
     </div>
 
@@ -97,6 +100,22 @@ const role =
 
 const open =
   ref(false)
+
+function login() {
+
+  window.location.assign(
+    `${API_URL}/auth/discord`
+  )
+
+}
+
+function logout() {
+
+  window.location.assign(
+    `${API_URL}/auth/logout`
+  )
+
+}
 
 const displayName =
   computed(() => {
@@ -168,6 +187,8 @@ onMounted(async () => {
 
 .login-btn{
 
+  border:none;
+
   background:#ff9933;
 
   color:black;
@@ -179,6 +200,10 @@ onMounted(async () => {
   text-decoration:none;
 
   font-weight:700;
+
+  font:inherit;
+
+  cursor:pointer;
 
 }
 
@@ -233,9 +258,12 @@ onMounted(async () => {
 
 }
 
-.dropdown-menu a{
+.dropdown-menu a,
+.logout-btn{
 
   display:block;
+
+  width:100%;
 
   padding:14px 18px;
 
@@ -243,9 +271,24 @@ onMounted(async () => {
 
   text-decoration:none;
 
+  text-align:left;
+
 }
 
-.dropdown-menu a:hover{
+.logout-btn{
+
+  border:none;
+
+  background:none;
+
+  font:inherit;
+
+  cursor:pointer;
+
+}
+
+.dropdown-menu a:hover,
+.logout-btn:hover{
 
   background:
   rgba(
