@@ -42,8 +42,9 @@ app.use(
     secret: process.env.SESSION_SECRET,
 
     resave: false,
-
     saveUninitialized: false,
+
+    proxy: true,
 
     cookie: {
       secure: true,
@@ -52,7 +53,7 @@ app.use(
     }
   })
 )
-
+app.use(session())
 app.use(passport.initialize())
 app.use(passport.session())
 app.use(
@@ -139,6 +140,12 @@ app.get(
   ),
 
   (req, res) => {
+
+    console.log("USER AFTER LOGIN:")
+    console.log(req.user)
+
+    console.log("SESSION AFTER LOGIN:")
+    console.log(req.session)
 
     console.log(
       "Redirecting to:",
