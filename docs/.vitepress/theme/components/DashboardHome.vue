@@ -271,10 +271,13 @@ async function loadUser() {
     const data =
       await response.json()
 
+    console.log("API RESPONSE:", data)
+
     if (data.loggedIn) {
 
-      user.value =
-        data.user
+      console.log("SETTING USER")
+
+      user.value = data.user
 
     }
 
