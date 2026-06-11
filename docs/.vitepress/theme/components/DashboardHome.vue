@@ -62,8 +62,12 @@
       </div>
 
       <div class="status-item">
-        <span class="dot online"></span>
-        Warera Network Connected
+        <span
+          class="dot"
+          :class="country ? 'online' : 'offline'"
+        ></span>
+        Warera Network
+        {{ country ? "Connected" : "Unavailable" }}
       </div>
 
     </div>
@@ -76,7 +80,7 @@
         </span>
 
         <strong>
-          --
+          {{ stats.total }}
         </strong>
 
       </div>
@@ -88,7 +92,7 @@
         </span>
 
         <strong>
-          --
+          {{ stats.pending }}
         </strong>
 
       </div>
@@ -100,7 +104,7 @@
         </span>
 
         <strong>
-          --
+          {{ stats.approved }}
         </strong>
 
       </div>
@@ -154,27 +158,35 @@
 
       <div>
         <span>Citizens</span>
-        <strong>195</strong>
+        <strong>{{ displayValue(country?.citizens) }}</strong>
       </div>
 
       <div>
         <span>Development Rank</span>
-        <strong>#11</strong>
+        <strong>
+          {{ country?.developmentRank
+            ? `#${country.developmentRank}`
+            : "--" }}
+        </strong>
       </div>
 
       <div>
         <span>Production Bonus</span>
-        <strong>30.5%</strong>
+        <strong>
+          {{ country?.productionBonus != null
+            ? `${country.productionBonus}%`
+            : "--" }}
+        </strong>
       </div>
 
       <div>
         <span>Allies</span>
-        <strong>17</strong>
+        <strong>{{ displayValue(country?.allies) }}</strong>
       </div>
 
       <div>
         <span>Current Wars</span>
-        <strong>17</strong>
+        <strong>{{ displayValue(country?.currentWars) }}</strong>
       </div>
 
     </div>
@@ -189,20 +201,29 @@
 
       <div class="activity-feed">
 
-        <div>
-          🟢 Guide System Initialized
+        <div
+          v-for="guide in recentGuides.slice(0, 4)"
+          :key="guide.id"
+          class="activity-entry"
+        >
+          <span
+            class="activity-dot"
+            :class="guide.status"
+          ></span>
+
+          <span>
+            {{ guide.title }}
+            <small>
+              {{ statusLabel(guide.status) }}
+            </small>
+          </span>
         </div>
 
-        <div>
-          🟢 Supervisor Access Verified
-        </div>
-
-        <div>
-          🟢 Knowledge Archive Synced
-        </div>
-
-        <div>
-          🟢 Dashboard Online
+        <div
+          v-if="!recentGuides.length"
+          class="empty-state"
+        >
+          No guide activity yet.
         </div>
 
       </div>
@@ -217,14 +238,52 @@
       RECENT OPERATIONS
     </h3>
 
-    <div class="guide-placeholder">
+    <div
+      v-if="recentGuides.length"
+      class="operations-list"
+    >
 
-      Guide activity feed will appear here.
+      <a
+        v-for="guide in recentGuides"
+        :key="guide.id"
+        :href="guideUrl(guide)"
+        class="operation-row"
+      >
+
+        <div>
+          <strong>{{ guide.title }}</strong>
+          <span>{{ formatDate(guide.created_at) }}</span>
+        </div>
+
+        <span
+          class="status-pill"
+          :class="guide.status"
+        >
+          {{ statusLabel(guide.status) }}
+        </span>
+
+      </a>
+
+    </div>
+
+    <div
+      v-else
+      class="guide-placeholder"
+    >
+
+      Your guide activity will appear here.
 
     </div>
 
   </div>
   </template>
+
+  <div
+    v-else
+    class="error-state"
+  >
+    {{ errorMessage }}
+  </div>
 
 </div>
 
@@ -244,6 +303,16 @@ from "../api"
 
 const user = ref(null)
 const loading = ref(true)
+const errorMessage =
+  ref("Please log in to view the dashboard.")
+const stats =
+  ref({
+    total: 0,
+    pending: 0,
+    approved: 0
+  })
+const country = ref(null)
+const recentGuides = ref([])
 
 const avatarUrl =
   computed(() => {
@@ -255,60 +324,119 @@ const avatarUrl =
 
   })
 
-async function loadUser() {
+function displayValue(value) {
+
+  return value ?? "--"
+
+}
+
+function statusLabel(status) {
+
+  const labels = {
+    pending: "Pending review",
+    approved: "Approved",
+    rejected: "Needs changes"
+  }
+
+  return labels[status] || status
+
+}
+
+function formatDate(value) {
+
+  if (!value)
+    return "Date unavailable"
+
+  return new Intl.DateTimeFormat(
+    "en-IN",
+    {
+      dateStyle: "medium",
+      timeStyle: "short"
+    }
+  ).format(new Date(value))
+
+}
+
+function guideUrl(guide) {
+
+  if (
+    guide.status === "approved" &&
+    guide.slug
+  ) {
+    return `/guide?slug=${guide.slug}`
+  }
+
+  if (
+    user.value?.role === "admin" ||
+    user.value?.role === "supervisor"
+  ) {
+    return "/dashboard/review-guides/"
+  }
+
+  return `/dashboard/edit-guide?id=${guide.id}`
+
+}
+
+async function loadDashboard() {
 
   try {
 
-    const response =
-      await fetch(
-        `${API_URL}/api/me`,
-        {
-          credentials: "include"
-        }
+    const [userResponse, dashboardResponse] =
+      await Promise.all([
+        fetch(
+          `${API_URL}/api/me`,
+          {
+            credentials: "include"
+          }
+        ),
+        fetch(
+          `${API_URL}/api/dashboard`,
+          {
+            credentials: "include"
+          }
+        )
+      ])
+
+    const userData =
+      await userResponse.json()
+
+    if (!userData.loggedIn) {
+      return
+    }
+
+    user.value = userData.user
+
+    if (!dashboardResponse.ok) {
+      throw new Error(
+        "Dashboard data is currently unavailable."
       )
-
-    console.log(
-      "DASHBOARD API:",
-      await response.clone().json()
-    )
-
-    const data =
-      await response.json()
-
-    console.log("API RESPONSE:", data)
-
-    if (data.loggedIn) {
-
-      console.log("SETTING USER")
-
-      user.value = data.user
-
     }
 
-    if (data.loggedIn) {
+    const dashboardData =
+      await dashboardResponse.json()
 
-      console.log("SETTING USER")
+    stats.value = dashboardData.stats
+    country.value = dashboardData.country
+    recentGuides.value =
+      dashboardData.recentGuides || []
 
-      user.value = data.user
-
-      console.log("USER VALUE", user.value)
-
-    }
-
-  }
-
-
-
-  catch(err) {
+  } catch(err) {
 
     console.error(err)
 
+    errorMessage.value =
+      err.message ||
+      "Dashboard data is currently unavailable."
+
+  } finally {
+
+    loading.value = false
+
   }
-  console.log("LOADING FINISHED")
-  loading.value = false
 
 }
-onMounted(loadUser)
+
+onMounted(loadDashboard)
 
 </script>
 
@@ -367,6 +495,15 @@ onMounted(loadUser)
 
   box-shadow:
   0 0 12px #00ff88;
+
+}
+
+.offline{
+
+  background:#ff5f57;
+
+  box-shadow:
+  0 0 12px rgba(255,95,87,.7);
 
 }
 
@@ -442,6 +579,69 @@ onMounted(loadUser)
 
 }
 
+.activity-entry{
+
+  display:flex;
+
+  align-items:flex-start;
+
+  gap:12px;
+
+}
+
+.activity-entry small{
+
+  display:block;
+
+  margin-top:3px;
+
+  color:rgba(255,255,255,.55);
+
+}
+
+.activity-dot{
+
+  flex:0 0 auto;
+
+  width:9px;
+
+  height:9px;
+
+  margin-top:6px;
+
+  border-radius:50%;
+
+  background:#ff9933;
+
+}
+
+.activity-dot.approved{
+
+  background:#20d96b;
+
+}
+
+.activity-dot.rejected{
+
+  background:#ff5f57;
+
+}
+
+.empty-state,
+.error-state{
+
+  color:rgba(255,255,255,.65);
+
+}
+
+.error-state{
+
+  padding:90px 48px;
+
+  text-align:center;
+
+}
+
 .recent-guides{
 
   margin-top:35px;
@@ -471,6 +671,92 @@ onMounted(loadUser)
 
   color:
   rgba(255,255,255,.65);
+
+}
+
+.operations-list{
+
+  display:flex;
+
+  flex-direction:column;
+
+}
+
+.operation-row{
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:space-between;
+
+  gap:20px;
+
+  padding:16px 0;
+
+  border-bottom:
+  1px solid rgba(255,255,255,.07);
+
+  color:white;
+
+  text-decoration:none;
+
+}
+
+.operation-row:last-child{
+
+  border-bottom:none;
+
+}
+
+.operation-row strong,
+.operation-row span{
+
+  display:block;
+
+}
+
+.operation-row div > span{
+
+  margin-top:5px;
+
+  color:rgba(255,255,255,.55);
+
+  font-size:.85rem;
+
+}
+
+.status-pill{
+
+  flex:0 0 auto;
+
+  padding:7px 11px;
+
+  border-radius:999px;
+
+  background:rgba(255,153,51,.12);
+
+  color:#ffb15c;
+
+  font-size:.8rem;
+
+  font-weight:700;
+
+}
+
+.status-pill.approved{
+
+  background:rgba(32,217,107,.12);
+
+  color:#62e99a;
+
+}
+
+.status-pill.rejected{
+
+  background:rgba(255,95,87,.12);
+
+  color:#ff8b85;
 
 }
 

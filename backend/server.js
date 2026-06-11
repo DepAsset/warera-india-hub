@@ -302,6 +302,132 @@ app.get("/api/me", async (req, res) => {
 
 })
 
+app.get("/api/dashboard", async (req, res) => {
+
+  if (!req.user) {
+
+    return res.status(401).json({
+      error: "Not logged in"
+    })
+
+  }
+
+  try {
+
+    const { data: dbUser, error: userError } =
+      await supabase
+        .from("users")
+        .select("id, role")
+        .eq("discord_id", req.user.id)
+        .single()
+
+    if (userError || !dbUser) {
+      throw userError || new Error("User not found")
+    }
+
+    let guidesQuery =
+      supabase
+        .from("guides")
+        .select(
+          "id, title, slug, status, created_at, updated_at"
+        )
+        .order("created_at", {
+          ascending: false
+        })
+
+    const canReview =
+      dbUser.role === "admin" ||
+      dbUser.role === "supervisor"
+
+    if (!canReview) {
+      guidesQuery =
+        guidesQuery.eq("author_id", dbUser.id)
+    }
+
+    const [
+      { data: guides, error: guidesError },
+      countryResponse
+    ] = await Promise.all([
+      guidesQuery,
+      fetch(
+        "https://api3.warera.io/trpc/country.getCountryById",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            countryId: "6813b6d546e731854c7ac862"
+          })
+        }
+      ).catch(err => {
+        console.error("Warera country request failed:", err)
+        return null
+      })
+    ])
+
+    if (guidesError) {
+      throw guidesError
+    }
+
+    const countryPayload =
+      countryResponse?.ok
+        ? await countryResponse.json()
+        : null
+
+    const country =
+      countryPayload?.result?.data
+
+    res.json({
+      stats: {
+        total: guides.length,
+        pending:
+          guides.filter(
+            guide => guide.status === "pending"
+          ).length,
+        approved:
+          guides.filter(
+            guide => guide.status === "approved"
+          ).length
+      },
+      recentGuides:
+        guides.slice(0, 5),
+      country: country
+        ? {
+            citizens:
+              country.rankings
+                ?.countryActivePopulation
+                ?.value ?? null,
+            developmentRank:
+              country.rankings
+                ?.countryDevelopment
+                ?.rank ?? null,
+            productionBonus:
+              country.strategicResources
+                ?.bonuses
+                ?.productionPercent ?? null,
+            allies:
+              country.allies?.length ?? 0,
+            currentWars:
+              country.warsWith?.length ?? 0,
+            updatedAt:
+              country.updatedAt ?? null
+          }
+        : null
+    })
+
+  } catch (err) {
+
+    console.error(err)
+
+    res.status(500).json({
+      error: "Failed to load dashboard"
+    })
+
+  }
+
+})
+
 app.get(
   "/debug-session",
   (req, res) => {
@@ -430,6 +556,14 @@ app.get("/api/guides/category/:slug", async (req, res) => {
 
 app.post("/api/guides", async (req, res) => {
 
+  if (!req.user) {
+
+    return res.status(401).json({
+      error: "Not logged in"
+    })
+
+  }
+
   try {
 
     const {
@@ -437,9 +571,19 @@ app.post("/api/guides", async (req, res) => {
       slug,
       category_id,
       content,
-      excerpt,
-      author_id
+      excerpt
     } = req.body
+
+    const { data: dbUser, error: userError } =
+      await supabase
+        .from("users")
+        .select("id")
+        .eq("discord_id", req.user.id)
+        .single()
+
+    if (userError || !dbUser) {
+      throw userError || new Error("User not found")
+    }
 
     const { data, error } =
       await supabase
@@ -450,7 +594,7 @@ app.post("/api/guides", async (req, res) => {
           category_id,
           content,
           excerpt,
-          author_id,
+          author_id: dbUser.id,
           status: "pending"
         })
         .select()
