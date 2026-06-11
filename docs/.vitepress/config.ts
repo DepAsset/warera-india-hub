@@ -5,6 +5,19 @@ export default defineConfig({
 
   description: 'Guides, Politics, Economy and Archives for Warera India',
 
+  vite: {
+    server: {
+      proxy: {
+        '/api': 'http://localhost:3000',
+        '/auth': 'http://localhost:3000',
+        '/uploads': 'http://localhost:3000',
+        '/debug-session': 'http://localhost:3000',
+        '/session-test': 'http://localhost:3000',
+        '/session-read': 'http://localhost:3000'
+      }
+    }
+  },
+
   themeConfig: {
     logo: "/img/india-logo.png",
     nav: [

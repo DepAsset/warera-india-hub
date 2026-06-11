@@ -1,0 +1,28 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://warera-india-hub.onrender.com/api/:path*"
+    },
+    {
+      "source": "/auth/:path*",
+      "destination": "https://warera-india-hub.onrender.com/auth/:path*"
+    },
+    {
+      "source": "/uploads/:path*",
+      "destination": "https://warera-india-hub.onrender.com/uploads/:path*"
+    },
+    {
+      "source": "/debug-session",
+      "destination": "https://warera-india-hub.onrender.com/debug-session"
+    },
+    {
+      "source": "/session-test",
+      "destination": "https://warera-india-hub.onrender.com/session-test"
+    },
+    {
+      "source": "/session-read",
+      "destination": "https://warera-india-hub.onrender.com/session-read"
+    }
+  ]
+}

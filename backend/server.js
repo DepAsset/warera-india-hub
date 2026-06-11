@@ -18,6 +18,10 @@ import dotenv from "dotenv"
 
 dotenv.config()
 const app = express()
+const isProduction =
+  process.env.NODE_ENV === "production" ||
+  process.env.RENDER === "true"
+
 app.use(express.json())
 
 app.use(
@@ -34,6 +38,28 @@ app.use(
   "/uploads",
   express.static("uploads")
 )
+
+app.set("trust proxy", 1)
+
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+
+    resave: false,
+    saveUninitialized: false,
+
+    proxy: true,
+
+    cookie: {
+      secure: isProduction,
+      httpOnly: true,
+      sameSite: "lax"
+    }
+  })
+)
+
+app.use(passport.initialize())
+app.use(passport.session())
 
 app.get("/session-test", (req, res) => {
 
@@ -53,27 +79,6 @@ app.get("/session-read", (req, res) => {
 
 })
 
-app.set("trust proxy", 1)
-
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET,
-
-    resave: false,
-    saveUninitialized: false,
-
-    proxy: true,
-
-    cookie: {
-      secure: true,
-      httpOnly: true,
-      sameSite: "none"
-    }
-  })
-)
-
-app.use(passport.initialize())
-app.use(passport.session())
 app.use(
   "/api/upload",
   uploadRoutes
@@ -170,21 +175,18 @@ app.get(
       `${process.env.FRONTEND_URL}/dashboard/`
     )
 
-    req.login(req.user, err => {
+    req.session.save(err => {
 
-  if (err) {
-    return res.redirect("/login-failed")
-  }
-
-  req.session.save(() => {
+      if (err) {
+        console.error("Failed to save login session:", err)
+        return res.redirect("/login-failed")
+      }
 
       res.redirect(
         `${process.env.FRONTEND_URL}/dashboard/`
       )
 
     })
-
-  })
 
   }
 )
@@ -199,7 +201,12 @@ app.get(
       req.session.destroy(() => {
 
         res.clearCookie(
-          "connect.sid"
+          "connect.sid",
+          {
+            secure: isProduction,
+            httpOnly: true,
+            sameSite: "lax"
+          }
         )
 
         res.redirect(
