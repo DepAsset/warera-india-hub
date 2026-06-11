@@ -13,7 +13,7 @@ aside: false
     Loading Dashboard...
   </div>
 
-  <template v-else-if="user">
+  <template v-else>
 
     <div class="hero-card">
 
@@ -281,18 +281,29 @@ async function loadUser() {
 
     }
 
+    if (data.loggedIn) {
+
+      console.log("SETTING USER")
+
+      user.value = data.user
+
+      console.log("USER VALUE", user.value)
+
+    }
+
   }
+
+
 
   catch(err) {
 
     console.error(err)
 
   }
-
+  console.log("LOADING FINISHED")
   loading.value = false
 
 }
-
 onMounted(loadUser)
 
 </script>
