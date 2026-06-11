@@ -18,7 +18,7 @@
         <div>
 
           <div class="badge">
-            {{ user?.role?.toUpperCase() || "AUTHOR" }}
+            {{ user && user.role ? user.role.toUpperCase() : "AUTHOR" }}
           </div>
 
           <h1>
@@ -127,8 +127,11 @@
 
       <a
         v-if="
-          user.role === 'admin' ||
-          user.role === 'supervisor'
+          user &&
+          (
+            user.role === 'admin' ||
+            user.role === 'supervisor'
+          )
         "
         href="/dashboard/review-guides/"
         class="action-card review"
