@@ -1,7 +1,3 @@
----
-layout: page
-aside: false
----
 <template>
 
 <div class="dashboard">
@@ -13,7 +9,7 @@ aside: false
     Loading Dashboard...
   </div>
 
-  <template v-else>
+  <template v-else-if="user">
 
     <div class="hero-card">
 
@@ -22,7 +18,7 @@ aside: false
         <div>
 
           <div class="badge">
-            {{ user.role.toUpperCase() }}
+            {{ user?.role?.toUpperCase() || "AUTHOR" }}
           </div>
 
           <h1>
@@ -30,7 +26,7 @@ aside: false
           </h1>
 
           <h2>
-            {{ user.username }}
+            {{ user?.username || "Guest" }}
           </h2>
 
           <p>
